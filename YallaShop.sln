@@ -1,0 +1,47 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36616.10 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YallaShop.API", "YallaShop.API\YallaShop.API.csproj", "{02EFAA87-460F-4827-ADF3-1955E79779FF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{037293E7-B763-4BF7-8E77-C3289B31E3C3} = {037293E7-B763-4BF7-8E77-C3289B31E3C3}
+		{9DB8C8EF-EE5C-4342-B865-C5F40980DEE0} = {9DB8C8EF-EE5C-4342-B865-C5F40980DEE0}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YallaShop.Application", "YallaShop.Application\YallaShop.Application.csproj", "{9DB8C8EF-EE5C-4342-B865-C5F40980DEE0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YallaShop.Domain", "YallaShop.Domain\YallaShop.Domain.csproj", "{01206C84-0791-4A37-A251-A2BC3707B3ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YallaShop.Infrastructure", "YallaShop.Infrastructure\YallaShop.Infrastructure.csproj", "{037293E7-B763-4BF7-8E77-C3289B31E3C3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{02EFAA87-460F-4827-ADF3-1955E79779FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02EFAA87-460F-4827-ADF3-1955E79779FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02EFAA87-460F-4827-ADF3-1955E79779FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02EFAA87-460F-4827-ADF3-1955E79779FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DB8C8EF-EE5C-4342-B865-C5F40980DEE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DB8C8EF-EE5C-4342-B865-C5F40980DEE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DB8C8EF-EE5C-4342-B865-C5F40980DEE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DB8C8EF-EE5C-4342-B865-C5F40980DEE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01206C84-0791-4A37-A251-A2BC3707B3ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01206C84-0791-4A37-A251-A2BC3707B3ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01206C84-0791-4A37-A251-A2BC3707B3ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01206C84-0791-4A37-A251-A2BC3707B3ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{037293E7-B763-4BF7-8E77-C3289B31E3C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{037293E7-B763-4BF7-8E77-C3289B31E3C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{037293E7-B763-4BF7-8E77-C3289B31E3C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{037293E7-B763-4BF7-8E77-C3289B31E3C3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7ABA21B9-B49D-4153-BF5C-9EB768928323}
+	EndGlobalSection
+EndGlobal

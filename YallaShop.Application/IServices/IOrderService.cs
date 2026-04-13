@@ -1,0 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using YallaShop.Application.DTOs;
+using YallaShop.Domain.Enums;
+
+namespace YallaShop.Application.IServices
+{
+    public interface IOrderService
+    {
+        Task<ResponseModel<int>> PlaceOrderAsync(string userId, PlaceOrderDto orderDto);
+        Task<ResponseModel<IEnumerable<OrderResponseDto>>> GetAllOrdersAsync(string userId);
+        Task<ResponseModel<OrderResponseDto>> GetOrderByIdAsync(int orderId);
+        Task<ResponseModel<bool>> UpdateOrderStatusAsync(int orderId, OrderStatus status);
+        Task<ResponseModel<bool>> CancelOrderAsync(int orderId);
+    }
+}
