@@ -2,9 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using YallaShop.Application.IRepositories;
 using YallaShop.Application.IServices;
-using YallaShop.Infrastructure.Services;
+
 using YallaShop.Infrastructure.Persistence;
 using YallaShop.Infrastructure.Repositories;
+using YallaShop.Infrastructure.Services;
 
 namespace YallaShop.API
 {
@@ -29,6 +30,14 @@ namespace YallaShop.API
             // Register Repositories
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+
+            // Register Repositories
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+            // Register Services
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
 
             // Register Services
             builder.Services.AddScoped<IOrderService, OrderService>();

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,8 +19,8 @@ namespace YallaShop.Domain.Entites
         public int CategoryId { get; set; }
         public Category Category { get; set; }
 
-        public int SellerId { get; set; }
-        public Seller Seller { get; set; }
+        public int? SellerId { get; set; }
+        public Seller? Seller { get; set; }
 
         public ICollection<Review> Reviews { get; set; }
 
