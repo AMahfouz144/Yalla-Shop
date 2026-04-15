@@ -11,6 +11,12 @@
     <Folder Include="Persistence\Migrations\" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Content Include="Templates\**\*.html">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	
   <ItemGroup>
     <PackageReference Include="MailKit" Version="4.15.1" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
