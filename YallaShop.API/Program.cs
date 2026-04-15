@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using YallaShop.Application.IRepositories;
 using YallaShop.Application.IServices;
-using YallaShop.Infrastructure.Services;
+
 using YallaShop.Infrastructure.Persistence;
 using YallaShop.Infrastructure.Repositories;
 using YallaShop.Domain.Entites;
@@ -15,6 +15,7 @@ using YallaShop.Infrastructure.Settings;
 using YallaShop.API.Mapping;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.OpenApi.Models;
+using YallaShop.Infrastructure.Services;
 
 namespace YallaShop.API
 {
@@ -74,14 +75,14 @@ namespace YallaShop.API
 
             builder.Services.AddSwaggerGen(swagger =>
             {
-                //This is to generate the Default UI of Swagger Documentation    
+                //Thisï¿½isï¿½toï¿½generateï¿½theï¿½Defaultï¿½UIï¿½ofï¿½Swaggerï¿½Documentationï¿½ï¿½ï¿½ï¿½
                 swagger.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
-                    Title = "ASP.NET 5 Web API",
+                    Title = "ASP.NETï¿½5ï¿½Webï¿½API",
                     Description = " ITI Projrcy"
                 });
-                // To Enable authorization using Swagger (JWT)    
+                //ï¿½Toï¿½Enableï¿½authorizationï¿½usingï¿½Swaggerï¿½(JWT)ï¿½ï¿½ï¿½ï¿½
                 swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Name = "Authorization",
@@ -89,7 +90,7 @@ namespace YallaShop.API
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "Enter 'Bearer' [space] and then your valid token in the text input below.\r\n\r\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\"",
+                    Description = "Enterï¿½'Bearer'ï¿½[space]ï¿½andï¿½thenï¿½yourï¿½validï¿½tokenï¿½inï¿½theï¿½textï¿½inputï¿½below.\r\n\r\nExample:ï¿½\"Bearerï¿½eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\"",
                 });
                 swagger.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
@@ -141,6 +142,14 @@ namespace YallaShop.API
             // Register Repositories
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+
+            // Register Repositories
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+            // Register Services
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
 
             // Register Services
             builder.Services.AddScoped<IOrderService, OrderService>();
