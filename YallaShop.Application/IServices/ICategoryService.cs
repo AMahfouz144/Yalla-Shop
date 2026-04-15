@@ -6,8 +6,8 @@ namespace YallaShop.Application.IServices
     {
         Task<IEnumerable<CategoryDto>> GetAllAsync();
         Task<CategoryDto?> GetByIdAsync(int id);
-        Task<CategoryDto> CreateAsync(CategoryDto dto);
-        Task<CategoryDto?> UpdateAsync(CategoryDto dto);
+        Task<CategoryDto> CreateAsync(CategoryAddDto dto);
+        Task<CategoryDto?> UpdateAsync(CategoryUpdateDto dto);
         Task<bool> DeleteAsync(int id);
     }
 }

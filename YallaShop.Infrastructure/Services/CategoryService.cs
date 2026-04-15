@@ -33,16 +33,19 @@ namespace YallaShop.Infrastructure.Services
             return MapToDto(category);
         }
 
-        public async Task<CategoryDto> CreateAsync(CategoryDto dto)
+        public async Task<CategoryDto> CreateAsync(CategoryAddDto dto)
         {
-            var category = MapToEntity(dto);
-            category.CreatedAt = DateTime.Now;
+            var category = new Category
+            {
+                Name = dto.Name,
+                CreatedAt = DateTime.Now
+            };
             await _repository.AddAsync(category);
             await _context.SaveChangesAsync();
             return MapToDto(category);
         }
 
-        public async Task<CategoryDto?> UpdateAsync(CategoryDto dto)
+        public async Task<CategoryDto?> UpdateAsync(CategoryUpdateDto dto)
         {
             var category = await _repository.GetByIdAsync(dto.Id);
             if (category == null || category.IsDeleted) return null;
@@ -74,15 +77,6 @@ namespace YallaShop.Infrastructure.Services
             };
         }
 
-        // Manual mapping: CategoryDto -> Category
-        private static Category MapToEntity(CategoryDto dto)
-        {
-            return new Category
-            {
-                Id = dto.Id,
-                Name = dto.Name,
-                CreatedAt = dto.CreatedAt
-            };
-        }
+
     }
 }
