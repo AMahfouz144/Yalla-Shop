@@ -6,8 +6,8 @@ namespace YallaShop.Application.IServices
     {
         Task<IEnumerable<ProductDto>> GetAllAsync();
         Task<ProductDto?> GetByIdAsync(int id);
-        Task<ProductDto> CreateAsync(ProductDto dto);
-        Task<ProductDto?> UpdateAsync(ProductDto dto);
+        Task<ProductDto> CreateAsync(ProductAddDto dto);
+        Task<ProductDto?> UpdateAsync(ProductUpdateDto dto);
         Task<bool> DeleteAsync(int id);
         Task<IEnumerable<ProductDto>> FilterAsync(ProductFilterDto filter);
     }
