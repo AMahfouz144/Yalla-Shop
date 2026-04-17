@@ -15,8 +15,6 @@ namespace YallaShop.Infrastructure.Services
     {
         private readonly IGenericRepository<Seller> _sellerRepository = sellerRepository;
 
-
-
         public async Task<ResponseModel<SellerRequestDto>> CreateSellerAsync(SellerRequestDto request)
         {
             if (request == null)

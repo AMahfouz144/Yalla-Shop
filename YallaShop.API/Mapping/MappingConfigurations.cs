@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using YallaShop.API.ViewModels.Cart;
+using YallaShop.Application.DTOs.Cart;
 
 namespace YallaShop.API.Mapping
 {
@@ -29,6 +31,11 @@ namespace YallaShop.API.Mapping
 
             CreateMap<Application.DTOs.ProductResponseDto, ViewModels.ProductViewModel>().ReverseMap();
             CreateMap<Application.DTOs.WishlistResponseDto, ViewModels.WishlistResponseViewModel>().ReverseMap();
+
+            CreateMap<AddToCartRequestVm, AddToCartDto>();
+            CreateMap<UpdateCartItemRequestVm, UpdateCartItemDto>();
+            CreateMap<CartDto, CartResponseVm>();
+            CreateMap<CartItemDto, CartItemResponseVm>();
         }
     }
 }

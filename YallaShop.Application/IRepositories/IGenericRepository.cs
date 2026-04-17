@@ -17,5 +17,6 @@ namespace YallaShop.Application.IRepositories
         Task<int> CountAsync(Expression<Func<T, bool>>? filter = null);
 
         Task<IEnumerable<T>> GetPagedAsync(int pageNumber, int pageSize, Expression<Func<T, bool>>? filter = null);
-    }
+		Task SaveChangesAsync();
+	}
 }

@@ -130,6 +130,12 @@ namespace YallaShop.API
             //Wishlist Service & Repo
             builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
             builder.Services.AddScoped<IWishlistService, WishlistService>();
+            builder.Services.AddScoped<ICartRepository, CartRepository>();
+            builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+            builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<IPromoService, PromoService>();
+            builder.Services.AddScoped<ICheckoutService, CheckoutService>();
+            builder.Services.AddScoped<IStripeService, StripeService>();
             //AutoMapper
             builder.Services.AddAutoMapper(cfg =>
             {
@@ -163,8 +169,9 @@ namespace YallaShop.API
                 app.UseSwaggerUI();
             }
 
+            app.UseCors("MyPolicy");
+            app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.MapControllers();
 
