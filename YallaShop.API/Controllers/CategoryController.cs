@@ -36,7 +36,7 @@ namespace YallaShop.API.Controllers
 
         // POST: api/Category
         [HttpPost]
-        public async Task<ActionResult<CategoryDto>> Create([FromBody] CategoryDto dto)
+        public async Task<ActionResult<CategoryDto>> Create([FromBody] CategoryAddDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -47,7 +47,7 @@ namespace YallaShop.API.Controllers
 
         // PUT: api/Category/5
         [HttpPut("{id}")]
-        public async Task<ActionResult<CategoryDto>> Update(int id, [FromBody] CategoryDto dto)
+        public async Task<ActionResult<CategoryDto>> Update(int id, [FromBody] CategoryUpdateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

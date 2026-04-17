@@ -2,6 +2,11 @@
 using System.Linq;
 using YallaShop.Application.DTOs;
 using YallaShop.Application.DTOs.Cart;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using YallaShop.Application.DTOs;
 using YallaShop.Domain.Entites;
 
 namespace YallaShop.Application.Mapping

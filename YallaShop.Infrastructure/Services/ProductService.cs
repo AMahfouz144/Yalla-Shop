@@ -37,11 +37,20 @@ namespace YallaShop.Infrastructure.Services
             return MapToDto(product);
         }
 
-        public async Task<ProductDto> CreateAsync(ProductDto dto)
+        public async Task<ProductDto> CreateAsync(ProductAddDto dto)
         {
-            var product = MapToEntity(dto);
-            product.CreatedAt = DateTime.Now;
-            product.Status = ProductStatus.Pending;
+            var product = new Product
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                Price = dto.Price,
+                StockQuantity = dto.StockQuantity,
+                ImageUrl = dto.ImageUrl,
+                CategoryId = dto.CategoryId,
+                SellerId = dto.SellerId,
+                CreatedAt = DateTime.Now,
+                Status = ProductStatus.Pending
+            };
             await _repository.AddAsync(product);
             await _context.SaveChangesAsync();
 
@@ -50,7 +59,7 @@ namespace YallaShop.Infrastructure.Services
             return MapToDto(product);
         }
 
-        public async Task<ProductDto?> UpdateAsync(ProductDto dto)
+        public async Task<ProductDto?> UpdateAsync(ProductUpdateDto dto)
         {
             var product = await _repository.GetAllAsync()
                 .Include(p => p.Category)
@@ -148,22 +157,6 @@ namespace YallaShop.Infrastructure.Services
             };
         }
 
-        // Manual mapping: ProductDto -> Product
-        private static Product MapToEntity(ProductDto dto)
-        {
-            return new Product
-            {
-                Id = dto.Id,
-                Name = dto.Name,
-                Description = dto.Description,
-                Price = dto.Price,
-                StockQuantity = dto.StockQuantity,
-                ImageUrl = dto.ImageUrl,
-                Status = dto.Status,
-                CategoryId = dto.CategoryId,
-                SellerId = dto.SellerId,
-                CreatedAt = dto.CreatedAt
-            };
-        }
+
     }
 }

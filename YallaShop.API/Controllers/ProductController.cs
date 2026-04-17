@@ -9,10 +9,15 @@ namespace YallaShop.API.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly ICategoryService _categoryService;
+        private readonly ISellerService _sellerService;
 
-        public ProductController(IProductService productService)
+
+        public ProductController(IProductService productService, ICategoryService categoryService, ISellerService sellerService)
         {
             _productService = productService;
+            _categoryService = categoryService;
+            _sellerService = sellerService;
         }
 
         // GET: api/Product
@@ -44,8 +49,14 @@ namespace YallaShop.API.Controllers
 
         // POST: api/Product
         [HttpPost]
-        public async Task<ActionResult<ProductDto>> Create([FromBody] ProductDto dto)
+        public async Task<ActionResult<ProductDto>> Create([FromBody] ProductAddDto dto)
         {
+            if(await _categoryService.GetByIdAsync(dto.CategoryId) == null)
+                return BadRequest(new { Message = $"Category with Id {dto.CategoryId} does not exist." });
+
+            if (dto.SellerId.HasValue && !await _sellerService.GetSellerByIdAsync(dto.SellerId.Value))
+                return BadRequest(new { Message = $"Seller with Id {dto.SellerId.Value} does not exist." });
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -55,8 +66,14 @@ namespace YallaShop.API.Controllers
 
         // PUT: api/Product/5
         [HttpPut("{id}")]
-        public async Task<ActionResult<ProductDto>> Update(int id, [FromBody] ProductDto dto)
+        public async Task<ActionResult<ProductDto>> Update(int id, [FromBody] ProductUpdateDto dto)
         {
+            if (await _categoryService.GetByIdAsync(dto.CategoryId) == null)
+                return BadRequest(new { Message = $"Category with Id {dto.CategoryId} does not exist." });
+
+            if (dto.SellerId.HasValue && !await _sellerService.GetSellerByIdAsync(dto.SellerId.Value))
+                return BadRequest(new { Message = $"Seller with Id {dto.SellerId.Value} does not exist." });
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 

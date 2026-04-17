@@ -17,6 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Controllers\" />
+    <Folder Include="ViewModels\" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\YallaShop.Infrastructure\YallaShop.Infrastructure.csproj" />
   </ItemGroup>
 

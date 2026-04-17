@@ -14,6 +14,7 @@ namespace YallaShop.Infrastructure.Services
     public class SellerService(IGenericRepository<Seller> sellerRepository) : ISellerService
     {
         private readonly IGenericRepository<Seller> _sellerRepository = sellerRepository;
+
         public async Task<ResponseModel<SellerRequestDto>> CreateSellerAsync(SellerRequestDto request)
         {
             if (request == null)
@@ -62,6 +63,12 @@ namespace YallaShop.Infrastructure.Services
                     Data = null
                 };
             }
+        }
+
+       public async Task<bool> GetSellerByIdAsync(int id)
+        {
+            var seller = await _sellerRepository.GetByIdAsync(id);
+            return seller != null;
         }
     }
 }
