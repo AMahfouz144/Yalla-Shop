@@ -170,6 +170,7 @@ namespace YallaShop.API
           //  }
 
             app.UseCors("MyPolicy");
+            app.UseStaticFiles();
             app.UseAuthentication();
             app.UseAuthorization();
 

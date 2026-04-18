@@ -21,8 +21,7 @@ namespace YallaShop.Infrastructure.Services
 
         public async Task<IEnumerable<ProductDto>> GetAllAsync()
         {
-            var products = await _repository.GetAllAsync()
-                .Where(p => !p.IsDeleted)
+            var products = await ActiveProductsInActiveCategories()
                 .Include(p => p.Category)
                 .ToListAsync();
             return products.Select(MapToDto);
@@ -30,22 +29,30 @@ namespace YallaShop.Infrastructure.Services
 
         public async Task<ProductDto?> GetByIdAsync(int id)
         {
-            var product = await _repository.GetAllAsync()
+            var product = await ActiveProductsInActiveCategories()
                 .Include(p => p.Category)
-                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+                .FirstOrDefaultAsync(p => p.Id == id);
             if (product == null) return null;
             return MapToDto(product);
         }
 
         public async Task<ProductDto> CreateAsync(ProductAddDto dto)
         {
+            byte[]? picture = null;
+            if (dto.Image != null)
+            {
+                using var memoryStream = new MemoryStream();
+                await dto.Image.CopyToAsync(memoryStream);
+                picture = memoryStream.ToArray();
+            }
+
             var product = new Product
             {
                 Name = dto.Name,
                 Description = dto.Description,
                 Price = dto.Price,
                 StockQuantity = dto.StockQuantity,
-                ImageUrl = dto.ImageUrl,
+                Picture = picture,
                 CategoryId = dto.CategoryId,
                 SellerId = dto.SellerId,
                 CreatedAt = DateTime.Now,
@@ -61,16 +68,26 @@ namespace YallaShop.Infrastructure.Services
 
         public async Task<ProductDto?> UpdateAsync(ProductUpdateDto dto)
         {
-            var product = await _repository.GetAllAsync()
+            var product = await ActiveProductsInActiveCategories()
                 .Include(p => p.Category)
-                .FirstOrDefaultAsync(p => p.Id == dto.Id && !p.IsDeleted);
+                .FirstOrDefaultAsync(p => p.Id == dto.Id);
             if (product == null) return null;
+
+            if (dto.Image != null)
+            {
+                using var memoryStream = new MemoryStream();
+                await dto.Image.CopyToAsync(memoryStream);
+                product.Picture = memoryStream.ToArray();
+            }
+            else
+            {
+                product.Picture = null;
+            }
 
             product.Name = dto.Name;
             product.Description = dto.Description;
             product.Price = dto.Price;
             product.StockQuantity = dto.StockQuantity;
-            product.ImageUrl = dto.ImageUrl;
             product.Status = dto.Status;
             product.CategoryId = dto.CategoryId;
             product.SellerId = dto.SellerId;
@@ -94,16 +111,17 @@ namespace YallaShop.Infrastructure.Services
 
         public async Task<IEnumerable<ProductDto>> FilterAsync(ProductFilterDto filter)
         {
-            var query = _repository.GetAllAsync()
-                .Where(p => !p.IsDeleted)
+            filter ??= new ProductFilterDto();
+
+            var query = ActiveProductsInActiveCategories()
                 .Include(p => p.Category)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(filter.Name))
-                query = query.Where(p => p.Name.Contains(filter.Name));
+                query = query.Where(p => p.Name != null && p.Name.Contains(filter.Name));
 
             if (!string.IsNullOrWhiteSpace(filter.Description))
-                query = query.Where(p => p.Description.Contains(filter.Description));
+                query = query.Where(p => p.Description != null && p.Description.Contains(filter.Description));
 
             if (filter.MinPrice.HasValue)
                 query = query.Where(p => p.Price >= filter.MinPrice.Value);
@@ -139,6 +157,14 @@ namespace YallaShop.Infrastructure.Services
             return products.Select(MapToDto);
         }
 
+        /** Product not soft-deleted and its category exists and is not soft-deleted. */
+        private IQueryable<Product> ActiveProductsInActiveCategories()
+        {
+            return _repository.GetAllAsync()
+                .Where(p => !p.IsDeleted
+                    && _context.Categories.Any(c => c.Id == p.CategoryId && !c.IsDeleted));
+        }
+
         // Manual mapping: Product -> ProductDto
         private static ProductDto MapToDto(Product product)
         {
@@ -149,7 +175,7 @@ namespace YallaShop.Infrastructure.Services
                 Description = product.Description,
                 Price = product.Price,
                 StockQuantity = product.StockQuantity,
-                ImageUrl = product.ImageUrl,
+                Picture = product.Picture,
                 Status = product.Status,
                 CategoryId = product.CategoryId,
                 SellerId = product.SellerId,

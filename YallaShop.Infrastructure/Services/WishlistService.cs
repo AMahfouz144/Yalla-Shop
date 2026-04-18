@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,7 +63,7 @@ namespace YallaShop.Infrastructure.Services
                             Description = w.Product.Description,
                             Price = w.Product.Price,
                             StockQuantity = w.Product.StockQuantity,
-                            ImageUrl = w.Product.ImageUrl
+                            Picture = w.Product.Picture
                         }
                     })
                     .FirstOrDefaultAsync();
@@ -123,7 +123,7 @@ namespace YallaShop.Infrastructure.Services
                         Description = i.Product.Description,
                         Price = i.Product.Price,
                         StockQuantity = i.Product.StockQuantity,
-                        ImageUrl = i.Product.ImageUrl
+                        Picture = i.Product.Picture
                     }
                 }).ToListAsync();
                 response.IsSuccess = true;

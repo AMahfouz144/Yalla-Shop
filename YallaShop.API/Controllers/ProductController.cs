@@ -49,7 +49,7 @@ namespace YallaShop.API.Controllers
 
         // POST: api/Product
         [HttpPost]
-        public async Task<ActionResult<ProductDto>> Create([FromBody] ProductAddDto dto)
+        public async Task<ActionResult<ProductDto>> Create([FromForm] ProductAddDto dto)
         {
             if(await _categoryService.GetByIdAsync(dto.CategoryId) == null)
                 return BadRequest(new { Message = $"Category with Id {dto.CategoryId} does not exist." });
@@ -66,7 +66,7 @@ namespace YallaShop.API.Controllers
 
         // PUT: api/Product/5
         [HttpPut("{id}")]
-        public async Task<ActionResult<ProductDto>> Update(int id, [FromBody] ProductUpdateDto dto)
+        public async Task<ActionResult<ProductDto>> Update(int id, [FromForm] ProductUpdateDto dto)
         {
             if (await _categoryService.GetByIdAsync(dto.CategoryId) == null)
                 return BadRequest(new { Message = $"Category with Id {dto.CategoryId} does not exist." });
