@@ -27,6 +27,13 @@ namespace YallaShop.API.Controllers
                 return BadRequest("Invalid order data. CartId is required.");
             }
 
+            if (string.IsNullOrWhiteSpace(orderDto.Street) || 
+                string.IsNullOrWhiteSpace(orderDto.City) || 
+                string.IsNullOrWhiteSpace(orderDto.Country))
+            {
+                return BadRequest("Shipping address fields (Street, City, Country) are required.");
+            }
+
             // Extract UserId from Claims
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             
@@ -58,6 +65,13 @@ namespace YallaShop.API.Controllers
         public async Task<IActionResult> GetOrderById(int id)
         {
             var result = await _orderService.GetOrderByIdAsync(id);
+            return result.IsSuccess ? Ok(result) : NotFound(result);
+        }
+
+        [HttpGet("{id}/status")]
+        public async Task<IActionResult> GetOrderStatus(int id)
+        {
+            var result = await _orderService.GetOrderStatusAsync(id);
             return result.IsSuccess ? Ok(result) : NotFound(result);
         }
 
