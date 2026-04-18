@@ -61,6 +61,14 @@ namespace YallaShop.Infrastructure.Services
             var category = await _repository.GetByIdAsync(id);
             if (category == null || category.IsDeleted) return false;
 
+            var products = await _context.Products
+                .Where(p => p.CategoryId == id && !p.IsDeleted)
+                .ToListAsync();
+            foreach (var p in products)
+            {
+                p.IsDeleted = true;
+            }
+
             category.IsDeleted = true;
             await _context.SaveChangesAsync();
             return true;

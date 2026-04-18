@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 using YallaShop.Domain.Enums;
 
 namespace YallaShop.Application.DTOs
@@ -22,7 +23,8 @@ namespace YallaShop.Application.DTOs
         [Range(0, int.MaxValue)]
         public int StockQuantity { get; set; }
 
-        public string ImageUrl { get; set; } = string.Empty;
+
+        public IFormFile? Image { get; set; }
 
         public ProductStatus Status { get; set; }
 
