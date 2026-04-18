@@ -9,7 +9,7 @@ namespace YallaShop.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize] // Temporarily disabled until Authentication Scheme is configured
+    [Authorize]
     public class OrdersController : ControllerBase
     {
         private readonly IOrderService _orderService;
@@ -20,6 +20,7 @@ namespace YallaShop.API.Controllers
         }
 
         [HttpPost("place")]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> PlaceOrder([FromBody] PlaceOrderDto orderDto)
         {
             if (orderDto == null || orderDto.CartId <= 0)
@@ -44,7 +45,9 @@ namespace YallaShop.API.Controllers
 
             return BadRequest(result);
         }
+
         [HttpGet]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> GetAllOrders()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -55,13 +58,23 @@ namespace YallaShop.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Customer,Admin")]
         public async Task<IActionResult> GetOrderById(int id)
         {
             var result = await _orderService.GetOrderByIdAsync(id);
             return result.IsSuccess ? Ok(result) : NotFound(result);
         }
 
+        [HttpGet("{id}/status")]
+        [Authorize(Roles = "Customer,Admin")]
+        public async Task<IActionResult> GetOrderStatus(int id)
+        {
+            var result = await _orderService.GetOrderStatusAsync(id);
+            return result.IsSuccess ? Ok(result) : NotFound(result);
+        }
+
         [HttpPut("{id}/status")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] OrderStatus status)
         {
             var result = await _orderService.UpdateOrderStatusAsync(id, status);
@@ -69,6 +82,7 @@ namespace YallaShop.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Customer,Admin")]
         public async Task<IActionResult> CancelOrder(int id)
         {
             var result = await _orderService.CancelOrderAsync(id);

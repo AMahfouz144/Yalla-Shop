@@ -59,7 +59,14 @@ namespace YallaShop.Infrastructure.Services
                     UserId = userId,
                     Status = OrderStatus.Pending,
                     CreatedAt = DateTime.Now,
-                    Items = new List<OrderItem>()
+                    Items = new List<OrderItem>(),
+                    PaymentMethod = orderDto.PaymentMethod,
+                    IsPaid = false,
+                    Street = orderDto.Street,
+                    City = orderDto.City,
+                    State = orderDto.State,
+                    Country = orderDto.Country,
+                    ZipCode = orderDto.ZipCode
                 };
 
                 decimal totalOrderPrice = 0;
@@ -126,27 +133,31 @@ namespace YallaShop.Infrastructure.Services
         {
             try
             {
-                var orders = await _context.Orders
+                var orderDtos = await _context.Orders
                     .Where(o => o.UserId == userId)
-                    .Include(o => o.Items)
-                        .ThenInclude(i => i.Product)
                     .OrderByDescending(o => o.CreatedAt)
-                    .ToListAsync();
-
-                var orderDtos = orders.Select(o => new OrderResponseDto
-                {
-                    Id = o.Id,
-                    Status = o.Status,
-                    TotalPrice = o.TotalPrice,
-                    CreatedAt = o.CreatedAt,
-                    Items = o.Items.Select(i => new OrderItemResponseDto
+                    .Select(o => new OrderResponseDto
                     {
-                        ProductId = i.ProductId,
-                        ProductName = i.Product?.Name ?? "Unknown Product",
-                        Quantity = i.Quantity,
-                        Price = i.Price
-                    }).ToList()
-                });
+                        Id = o.Id,
+                        Status = o.Status,
+                        TotalPrice = o.TotalPrice,
+                        CreatedAt = o.CreatedAt,
+                        PaymentMethod = o.PaymentMethod,
+                        IsPaid = o.IsPaid,
+                        Street = o.Street,
+                        City = o.City,
+                        State = o.State,
+                        Country = o.Country,
+                        ZipCode = o.ZipCode,
+                        Items = o.Items.Select(i => new OrderItemResponseDto
+                        {
+                            ProductId = i.ProductId,
+                            ProductName = i.Product != null ? i.Product.Name : "Unknown Product",
+                            Quantity = i.Quantity,
+                            Price = i.Price
+                        }).ToList()
+                    })
+                    .ToListAsync();
 
                 return new ResponseModel<IEnumerable<OrderResponseDto>>
                 {
@@ -168,30 +179,35 @@ namespace YallaShop.Infrastructure.Services
         {
             try
             {
-                var order = await _context.Orders
-                    .Include(o => o.Items)
-                        .ThenInclude(i => i.Product)
-                    .FirstOrDefaultAsync(o => o.Id == orderId);
+                var orderDto = await _context.Orders
+                    .Where(o => o.Id == orderId)
+                    .Select(o => new OrderResponseDto
+                    {
+                        Id = o.Id,
+                        Status = o.Status,
+                        TotalPrice = o.TotalPrice,
+                        CreatedAt = o.CreatedAt,
+                        PaymentMethod = o.PaymentMethod,
+                        IsPaid = o.IsPaid,
+                        Street = o.Street,
+                        City = o.City,
+                        State = o.State,
+                        Country = o.Country,
+                        ZipCode = o.ZipCode,
+                        Items = o.Items.Select(i => new OrderItemResponseDto
+                        {
+                            ProductId = i.ProductId,
+                            ProductName = i.Product != null ? i.Product.Name : "Unknown Product",
+                            Quantity = i.Quantity,
+                            Price = i.Price
+                        }).ToList()
+                    })
+                    .FirstOrDefaultAsync();
 
-                if (order == null)
+                if (orderDto == null)
                 {
                     return new ResponseModel<OrderResponseDto> { IsSuccess = false, Message = "Order not found." };
                 }
-
-                var orderDto = new OrderResponseDto
-                {
-                    Id = order.Id,
-                    Status = order.Status,
-                    TotalPrice = order.TotalPrice,
-                    CreatedAt = order.CreatedAt,
-                    Items = order.Items.Select(i => new OrderItemResponseDto
-                    {
-                        ProductId = i.ProductId,
-                        ProductName = i.Product?.Name ?? "Unknown Product",
-                        Quantity = i.Quantity,
-                        Price = i.Price
-                    }).ToList()
-                };
 
                 return new ResponseModel<OrderResponseDto>
                 {
@@ -228,6 +244,24 @@ namespace YallaShop.Infrastructure.Services
             catch (Exception ex)
             {
                 return new ResponseModel<bool> { IsSuccess = false, Message = "Error updating status: " + ex.Message, Data = false };
+            }
+        }
+
+        public async Task<ResponseModel<OrderStatus>> GetOrderStatusAsync(int orderId)
+        {
+            try
+            {
+                var order = await _orderRepository.GetByIdAsync(orderId);
+                if (order == null)
+                {
+                    return new ResponseModel<OrderStatus> { IsSuccess = false, Message = "Order not found." };
+                }
+
+                return new ResponseModel<OrderStatus> { IsSuccess = true, Data = order.Status };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel<OrderStatus> { IsSuccess = false, Message = "Error fetching order status: " + ex.Message };
             }
         }
 

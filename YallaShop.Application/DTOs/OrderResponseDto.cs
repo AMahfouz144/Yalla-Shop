@@ -13,6 +13,18 @@ namespace YallaShop.Application.DTOs
         public OrderStatus Status { get; set; }
         public decimal TotalPrice { get; set; }
         public DateTime CreatedAt { get; set; }
+        
+        // Payment Info
+        public PaymentMethod PaymentMethod { get; set; }
+        public bool IsPaid { get; set; }
+
+        // Shipping Address Fields
+        public string Street { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string Country { get; set; }
+        public string ZipCode { get; set; }
+
         public List<OrderItemResponseDto> Items { get; set; } = new List<OrderItemResponseDto>();
     }
 }
