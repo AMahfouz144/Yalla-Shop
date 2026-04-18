@@ -18,6 +18,6 @@ namespace YallaShop.Application.IServices
 
         Task<ResponseModel<bool>> ForgotPasswordAsync(ForgotPasswordRequest request);
 
-        Task<ResponseModel<bool>> ResetPasswordAsync(ResetPasswordRequest request);
+        Task<ResponseModel<bool>> ResetPasswordAsync(string userId, string code, ResetPasswordRequest request);
     }
 }

@@ -108,7 +108,8 @@ namespace YallaShop.Infrastructure.Services
                         Id = user.Id,
                         UserName = user.UserName,
                         token = token,
-                        TokenExpiryTime = expiration
+                        TokenExpiryTime = expiration,
+                        FullName = user.FullName
                     }
                 };
             }
@@ -137,13 +138,23 @@ namespace YallaShop.Infrastructure.Services
                         Data = null
                     };
                 }
+                if(!user.EmailConfirmed)
+                {
+                    return new ResponseModel<UserResponseDto>
+                    {
+                        IsSuccess = false,
+                        Message = "Email not confirmed. Please check your email for confirmation instructions.",
+                        Data = null
+                    };
+                }
                 var (token, expiration) = await _jwtService.GenerateTokenAsync(user);
                 var responseDto = new UserResponseDto
                 {
                     Id = user.Id,
                     UserName = user.UserName,
                     token = token,
-                    TokenExpiryTime = expiration
+                    TokenExpiryTime = expiration,
+                    FullName = user.FullName
                 };
                 return new ResponseModel<UserResponseDto>
                 {
@@ -191,9 +202,9 @@ namespace YallaShop.Infrastructure.Services
 
             if (user.EmailConfirmed)
             {
-                response.IsSuccess = false;
+                response.IsSuccess = true;
                 response.Message = "Email already confirmed.";
-                response.Data = false;
+                response.Data = true;
                 return response;
             }
 
@@ -270,10 +281,10 @@ namespace YallaShop.Infrastructure.Services
             return response;
         }
 
-        public async Task<ResponseModel<bool>> ResetPasswordAsync(ResetPasswordRequest request)
+        public async Task<ResponseModel<bool>> ResetPasswordAsync(string userId , string code, ResetPasswordRequest request)
         {
             var response = new ResponseModel<bool>();
-            var user = await _userManager.FindByIdAsync(request.UserId);
+            var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 response.IsSuccess = false;
@@ -282,7 +293,6 @@ namespace YallaShop.Infrastructure.Services
                 return response;
             }
 
-            var code = request.Code;
             try
             {
                 code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
