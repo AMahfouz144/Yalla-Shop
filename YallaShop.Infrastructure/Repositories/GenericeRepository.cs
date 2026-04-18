@@ -25,11 +25,13 @@ namespace YallaShop.Infrastructure.Repositories
         public async Task AddAsync(T entity)
         {
             await _context.Set<T>().AddAsync(entity);
+            await _context.SaveChangesAsync();
         }
 
         public void Update(T entity)
         {
             _context.Set<T>().Update(entity);
+                _context.SaveChanges();
         }
 
         public async Task<bool> DeleteAsync(int id)

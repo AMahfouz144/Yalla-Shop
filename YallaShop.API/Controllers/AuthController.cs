@@ -75,10 +75,10 @@ namespace YallaShop.API.Controllers
         }
 
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel request)
+        public async Task<IActionResult> ResetPassword(string userId , string code, [FromBody] ResetPasswordViewModel request)
         {
             var dto = _mapper.Map<ResetPasswordRequest>(request);
-            var result = await _authService.ResetPasswordAsync(dto);
+            var result = await _authService.ResetPasswordAsync(userId, code, dto);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }
