@@ -63,7 +63,7 @@ namespace YallaShop.Infrastructure.Services
                             Description = w.Product.Description,
                             Price = w.Product.Price,
                             StockQuantity = w.Product.StockQuantity,
-                            Picture = w.Product.Picture
+                            Picture = w.Product.ImageUrl
                         }
                     })
                     .FirstOrDefaultAsync();
@@ -123,7 +123,7 @@ namespace YallaShop.Infrastructure.Services
                         Description = i.Product.Description,
                         Price = i.Product.Price,
                         StockQuantity = i.Product.StockQuantity,
-                        Picture = i.Product.Picture
+                        Picture = i.Product.ImageUrl,
                     }
                 }).ToListAsync();
                 response.IsSuccess = true;

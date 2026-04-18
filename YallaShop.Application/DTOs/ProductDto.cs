@@ -22,7 +22,7 @@ namespace YallaShop.Application.DTOs
         [Range(0, int.MaxValue)]
         public int StockQuantity { get; set; }
 
-        public byte[]? Picture { get; set; }
+        public string? ImageUrl { get; set; }
 
         public ProductStatus Status { get; set; }
 
