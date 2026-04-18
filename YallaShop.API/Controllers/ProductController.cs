@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using YallaShop.API.Helpers;
 using YallaShop.Application.DTOs;
 using YallaShop.Application.IServices;
 
@@ -11,13 +12,15 @@ namespace YallaShop.API.Controllers
         private readonly IProductService _productService;
         private readonly ICategoryService _categoryService;
         private readonly ISellerService _sellerService;
+        private readonly IFileHelper _fileHelper;
 
 
-        public ProductController(IProductService productService, ICategoryService categoryService, ISellerService sellerService)
+        public ProductController(IProductService productService, ICategoryService categoryService, ISellerService sellerService, IFileHelper fileHelper)
         {
             _productService = productService;
             _categoryService = categoryService;
             _sellerService = sellerService;
+            _fileHelper = fileHelper;
         }
 
         // GET: api/Product
@@ -60,7 +63,9 @@ namespace YallaShop.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var product = await _productService.CreateAsync(dto);
+            string? imageUrl = await _fileHelper.UploadPhoto(dto.Image);
+
+            var product = await _productService.CreateAsync(imageUrl,dto);
             return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
         }
 
@@ -80,7 +85,9 @@ namespace YallaShop.API.Controllers
             if (id != dto.Id)
                 return BadRequest(new { Message = "Id in URL does not match Id in request body." });
 
-            var product = await _productService.UpdateAsync(dto);
+            string imageUrl = await _fileHelper.UploadPhoto(dto.Image);
+
+            var product = await _productService.UpdateAsync(imageUrl, dto);
             if (product == null)
                 return NotFound(new { Message = $"Product with Id {id} not found." });
 

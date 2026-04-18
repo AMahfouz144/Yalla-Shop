@@ -36,7 +36,7 @@ namespace YallaShop.Infrastructure.Services
             return MapToDto(product);
         }
 
-        public async Task<ProductDto> CreateAsync(ProductAddDto dto)
+        public async Task<ProductDto> CreateAsync(string imageUrl, ProductAddDto dto)
         {
             byte[]? picture = null;
             if (dto.Image != null)
@@ -52,7 +52,7 @@ namespace YallaShop.Infrastructure.Services
                 Description = dto.Description,
                 Price = dto.Price,
                 StockQuantity = dto.StockQuantity,
-                Picture = picture,
+                ImageUrl = imageUrl,
                 CategoryId = dto.CategoryId,
                 SellerId = dto.SellerId,
                 CreatedAt = DateTime.Now,
@@ -66,23 +66,14 @@ namespace YallaShop.Infrastructure.Services
             return MapToDto(product);
         }
 
-        public async Task<ProductDto?> UpdateAsync(ProductUpdateDto dto)
+        public async Task<ProductDto?> UpdateAsync(string imageUrl , ProductUpdateDto dto)
         {
             var product = await ActiveProductsInActiveCategories()
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.Id == dto.Id);
             if (product == null) return null;
 
-            if (dto.Image != null)
-            {
-                using var memoryStream = new MemoryStream();
-                await dto.Image.CopyToAsync(memoryStream);
-                product.Picture = memoryStream.ToArray();
-            }
-            else
-            {
-                product.Picture = null;
-            }
+           
 
             product.Name = dto.Name;
             product.Description = dto.Description;
@@ -91,6 +82,7 @@ namespace YallaShop.Infrastructure.Services
             product.Status = dto.Status;
             product.CategoryId = dto.CategoryId;
             product.SellerId = dto.SellerId;
+            product.ImageUrl = imageUrl;
 
             _repository.Update(product);
             await _context.SaveChangesAsync();
@@ -175,7 +167,7 @@ namespace YallaShop.Infrastructure.Services
                 Description = product.Description,
                 Price = product.Price,
                 StockQuantity = product.StockQuantity,
-                Picture = product.Picture,
+                ImageUrl = product.ImageUrl,
                 Status = product.Status,
                 CategoryId = product.CategoryId,
                 SellerId = product.SellerId,

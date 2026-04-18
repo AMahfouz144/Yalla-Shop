@@ -16,6 +16,7 @@ using YallaShop.API.Mapping;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.OpenApi.Models;
 using YallaShop.Infrastructure.Services;
+using YallaShop.API.Helpers;
 
 namespace YallaShop.API
 {
@@ -136,6 +137,8 @@ namespace YallaShop.API
             builder.Services.AddScoped<IPromoService, PromoService>();
             builder.Services.AddScoped<ICheckoutService, CheckoutService>();
             builder.Services.AddScoped<IStripeService, StripeService>();
+            //File helper 
+            builder.Services.AddScoped<IFileHelper, FilesHelper>();
             //AutoMapper
             builder.Services.AddAutoMapper(cfg =>
             {
