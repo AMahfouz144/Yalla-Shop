@@ -13,6 +13,7 @@ namespace YallaShop.Application.IServices
         Task<ResponseModel<int>> PlaceOrderAsync(string userId, PlaceOrderDto orderDto);
         Task<ResponseModel<IEnumerable<OrderResponseDto>>> GetAllOrdersAsync(string userId);
         Task<ResponseModel<OrderResponseDto>> GetOrderByIdAsync(int orderId);
+        Task<ResponseModel<OrderStatus>> GetOrderStatusAsync(int orderId);
         Task<ResponseModel<bool>> UpdateOrderStatusAsync(int orderId, OrderStatus status);
         Task<ResponseModel<bool>> CancelOrderAsync(int orderId);
     }

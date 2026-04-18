@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -21,5 +21,16 @@ namespace YallaShop.Domain.Entites
         public ICollection<OrderItem> Items { get; set; }
 
         public Payment Payment { get; set; }
+
+        // Shipping Address Fields
+        public string Street { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string Country { get; set; }
+        public string ZipCode { get; set; }
+
+        // Payment Info
+        public PaymentMethod? PaymentMethod { get; set; }
+        public bool IsPaid { get; set; }
     }
 }

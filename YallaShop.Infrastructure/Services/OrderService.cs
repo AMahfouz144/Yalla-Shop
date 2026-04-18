@@ -59,6 +59,13 @@ namespace YallaShop.Infrastructure.Services
                     UserId = userId,
                     Status = OrderStatus.Pending,
                     CreatedAt = DateTime.Now,
+                    Street = orderDto.Street,
+                    City = orderDto.City,
+                    State = orderDto.State,
+                    Country = orderDto.Country,
+                    ZipCode = orderDto.ZipCode,
+                    PaymentMethod = orderDto.PaymentMethod,
+                    IsPaid = false,
                     Items = new List<OrderItem>()
                 };
 
@@ -139,6 +146,13 @@ namespace YallaShop.Infrastructure.Services
                     Status = o.Status,
                     TotalPrice = o.TotalPrice,
                     CreatedAt = o.CreatedAt,
+                    Street = o.Street,
+                    City = o.City,
+                    State = o.State,
+                    Country = o.Country,
+                    ZipCode = o.ZipCode,
+                    PaymentMethod = o.PaymentMethod,
+                    IsPaid = o.IsPaid,
                     Items = o.Items.Select(i => new OrderItemResponseDto
                     {
                         ProductId = i.ProductId,
@@ -184,6 +198,13 @@ namespace YallaShop.Infrastructure.Services
                     Status = order.Status,
                     TotalPrice = order.TotalPrice,
                     CreatedAt = order.CreatedAt,
+                    Street = order.Street,
+                    City = order.City,
+                    State = order.State,
+                    Country = order.Country,
+                    ZipCode = order.ZipCode,
+                    PaymentMethod = order.PaymentMethod,
+                    IsPaid = order.IsPaid,
                     Items = order.Items.Select(i => new OrderItemResponseDto
                     {
                         ProductId = i.ProductId,
@@ -205,6 +226,35 @@ namespace YallaShop.Infrastructure.Services
                 {
                     IsSuccess = false,
                     Message = "Error fetching order details: " + ex.Message
+                };
+            }
+        }
+
+        public async Task<ResponseModel<OrderStatus>> GetOrderStatusAsync(int orderId)
+        {
+            try
+            {
+                var order = await _context.Orders
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(o => o.Id == orderId);
+
+                if (order == null)
+                {
+                    return new ResponseModel<OrderStatus> { IsSuccess = false, Message = "Order not found." };
+                }
+
+                return new ResponseModel<OrderStatus>
+                {
+                    IsSuccess = true,
+                    Data = order.Status
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel<OrderStatus>
+                {
+                    IsSuccess = false,
+                    Message = "Error fetching order status: " + ex.Message
                 };
             }
         }
