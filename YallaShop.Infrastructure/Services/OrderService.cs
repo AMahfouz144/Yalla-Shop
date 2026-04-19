@@ -23,34 +23,62 @@ namespace YallaShop.Infrastructure.Services
             _context = context;
         }
 
+        // ─── Queries (Using PROJECTION - No Include) ────────────────────────────────
+
         public async Task<ResponseModel<IEnumerable<OrderResponseDto>>> GetAllOrdersAsync(string userId)
         {
             try
             {
-                var orders = await _context.Orders
+                var orderDtos = await _context.Orders
+                    .AsNoTracking()
                     .Where(o => o.UserId == userId)
-                    .Include(o => o.Items)
-                        .ThenInclude(i => i.Product)
-                    .Include(o => o.ShippingAddress)
-                    .Include(o => o.Payment)
                     .OrderByDescending(o => o.CreatedAt)
+                    .Select(OrderSelector)
                     .ToListAsync();
 
-                var orderDtos = orders.Select(o => MapOrderResponse(o));
-
-                return new ResponseModel<IEnumerable<OrderResponseDto>>
-                {
-                    IsSuccess = true,
-                    Data = orderDtos
-                };
+                return new ResponseModel<IEnumerable<OrderResponseDto>> { IsSuccess = true, Data = orderDtos };
             }
             catch (Exception ex)
             {
-                return new ResponseModel<IEnumerable<OrderResponseDto>>
-                {
-                    IsSuccess = false,
-                    Message = "Error fetching orders: " + ex.Message
-                };
+                return new ResponseModel<IEnumerable<OrderResponseDto>> { IsSuccess = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<ResponseModel<IEnumerable<OrderResponseDto>>> GetOrdersByCustomerAsync(string customerId)
+        {
+            try
+            {
+                var orderDtos = await _context.Orders
+                    .AsNoTracking()
+                    .Where(o => o.UserId == customerId)
+                    .OrderByDescending(o => o.CreatedAt)
+                    .Select(OrderSelector)
+                    .ToListAsync();
+
+                return new ResponseModel<IEnumerable<OrderResponseDto>> { IsSuccess = true, Data = orderDtos };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel<IEnumerable<OrderResponseDto>> { IsSuccess = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<ResponseModel<IEnumerable<OrderResponseDto>>> GetOrdersBySellerAsync(string sellerId)
+        {
+            try
+            {
+                var orderDtos = await _context.Orders
+                    .AsNoTracking()
+                    .Where(o => o.Items.Any(i => i.Product.Seller.UserId == sellerId))
+                    .OrderByDescending(o => o.CreatedAt)
+                    .Select(OrderSelector)
+                    .ToListAsync();
+
+                return new ResponseModel<IEnumerable<OrderResponseDto>> { IsSuccess = true, Data = orderDtos };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel<IEnumerable<OrderResponseDto>> { IsSuccess = false, Message = ex.Message };
             }
         }
 
@@ -58,65 +86,21 @@ namespace YallaShop.Infrastructure.Services
         {
             try
             {
-                var order = await _context.Orders
-                    .Include(o => o.Items)
-                        .ThenInclude(i => i.Product)
-                    .Include(o => o.ShippingAddress)
-                    .Include(o => o.Payment)
-                    .FirstOrDefaultAsync(o => o.Id == orderId);
+                var orderDto = await _context.Orders
+                    .AsNoTracking()
+                    .Where(o => o.Id == orderId)
+                    .Select(OrderSelector)
+                    .FirstOrDefaultAsync();
 
-                if (order == null)
-                {
+                if (orderDto == null)
                     return new ResponseModel<OrderResponseDto> { IsSuccess = false, Message = "Order not found." };
-                }
 
-                return new ResponseModel<OrderResponseDto>
-                {
-                    IsSuccess = true,
-                    Data = MapOrderResponse(order)
-                };
+                return new ResponseModel<OrderResponseDto> { IsSuccess = true, Data = orderDto };
             }
             catch (Exception ex)
             {
-                return new ResponseModel<OrderResponseDto>
-                {
-                    IsSuccess = false,
-                    Message = "Error fetching order details: " + ex.Message
-                };
+                return new ResponseModel<OrderResponseDto> { IsSuccess = false, Message = ex.Message };
             }
-        }
-
-        private static OrderResponseDto MapOrderResponse(Order o)
-        {
-            return new OrderResponseDto
-            {
-                Id = o.Id,
-                Status = o.Status,
-                TotalPrice = o.TotalPrice,
-                CreatedAt = o.CreatedAt,
-                ShippingAddress = o.ShippingAddress == null
-                    ? null
-                    : new ShippingAddressDto
-                    {
-                        Id = o.ShippingAddress.Id,
-                        Label = o.ShippingAddress.Label,
-                        Street = o.ShippingAddress.Street,
-                        City = o.ShippingAddress.City,
-                        State = o.ShippingAddress.State,
-                        Country = o.ShippingAddress.Country,
-                        ZipCode = o.ShippingAddress.ZipCode,
-                        IsDefault = o.ShippingAddress.IsDefault
-                    },
-                PaymentMethod = o.Payment?.Method.ToString(),
-                PaymentStatus = o.Payment?.Status.ToString(),
-                Items = o.Items.Select(i => new OrderItemResponseDto
-                {
-                    ProductId = i.ProductId,
-                    ProductName = i.Product?.Name ?? "Unknown Product",
-                    Quantity = i.Quantity,
-                    Price = i.Price
-                }).ToList()
-            };
         }
 
         public async Task<ResponseModel<OrderStatus>> GetOrderStatusAsync(int orderId)
@@ -125,68 +109,41 @@ namespace YallaShop.Infrastructure.Services
             {
                 var order = await _context.Orders
                     .AsNoTracking()
+                    .Select(o => new { o.Id, o.Status })
                     .FirstOrDefaultAsync(o => o.Id == orderId);
 
-                if (order == null)
-                {
-                    return new ResponseModel<OrderStatus> { IsSuccess = false, Message = "Order not found." };
-                }
-
-                return new ResponseModel<OrderStatus>
-                {
-                    IsSuccess = true,
-                    Data = order.Status
-                };
+                if (order == null) return new ResponseModel<OrderStatus> { IsSuccess = false, Message = "Order not found." };
+                return new ResponseModel<OrderStatus> { IsSuccess = true, Data = order.Status };
             }
-            catch (Exception ex)
-            {
-                return new ResponseModel<OrderStatus>
-                {
-                    IsSuccess = false,
-                    Message = "Error fetching order status: " + ex.Message
-                };
-            }
+            catch (Exception ex) { return new ResponseModel<OrderStatus> { IsSuccess = false, Message = ex.Message }; }
         }
+
+        // ─── Commands ────────────────────────────────────────────────────────────────
 
         public async Task<ResponseModel<bool>> UpdateOrderStatusAsync(int orderId, OrderStatus status)
         {
             try
             {
+                // We fetch by ID for update - IOrderRepository usually handles this efficiently
                 var order = await _orderRepository.GetByIdAsync(orderId);
-                if (order == null)
-                {
-                    return new ResponseModel<bool> { IsSuccess = false, Message = "Order not found.", Data = false };
-                }
+                if (order == null) return new ResponseModel<bool> { IsSuccess = false, Data = false };
 
                 order.Status = status;
                 _orderRepository.Update(order);
                 await _context.SaveChangesAsync();
 
-                return new ResponseModel<bool> { IsSuccess = true, Message = "Order status updated successfully.", Data = true };
+                return new ResponseModel<bool> { IsSuccess = true, Data = true };
             }
-            catch (Exception ex)
-            {
-                return new ResponseModel<bool> { IsSuccess = false, Message = "Error updating status: " + ex.Message, Data = false };
-            }
+            catch (Exception ex) { return new ResponseModel<bool> { IsSuccess = false, Message = ex.Message, Data = false }; }
         }
 
         public async Task<ResponseModel<bool>> CancelOrderAsync(int orderId)
         {
             try
             {
-                var order = await _context.Orders
-                    .Include(o => o.Items)
-                    .FirstOrDefaultAsync(o => o.Id == orderId);
-
-                if (order == null)
-                {
-                    return new ResponseModel<bool> { IsSuccess = false, Message = "Order not found.", Data = false };
-                }
-
-                if (order.Status != OrderStatus.Pending)
-                {
-                    return new ResponseModel<bool> { IsSuccess = false, Message = "Only pending orders can be cancelled.", Data = false };
-                }
+                // Logic requires items to restore stock
+                var order = await _context.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == orderId);
+                if (order == null || order.Status != OrderStatus.Pending) return new ResponseModel<bool> { IsSuccess = false, Data = false };
 
                 foreach (var item in order.Items)
                 {
@@ -202,12 +159,39 @@ namespace YallaShop.Infrastructure.Services
                 _orderRepository.Update(order);
                 await _context.SaveChangesAsync();
 
-                return new ResponseModel<bool> { IsSuccess = true, Message = "Order cancelled successfully.", Data = true };
+                return new ResponseModel<bool> { IsSuccess = true, Data = true };
             }
-            catch (Exception ex)
-            {
-                return new ResponseModel<bool> { IsSuccess = false, Message = "Error cancelling order: " + ex.Message, Data = false };
-            }
+            catch (Exception ex) { return new ResponseModel<bool> { IsSuccess = false, Message = ex.Message, Data = false }; }
         }
+
+        // ─── Shared Selector (Projection) ───────────────────────────────────────────
+
+        private static readonly System.Linq.Expressions.Expression<Func<Order, OrderResponseDto>> OrderSelector = o => new OrderResponseDto
+        {
+            Id = o.Id,
+            Status = o.Status,
+            TotalPrice = o.TotalPrice,
+            CreatedAt = o.CreatedAt,
+            ShippingAddress = o.ShippingAddress == null ? null : new ShippingAddressDto
+            {
+                Id = o.ShippingAddress.Id,
+                Label = o.ShippingAddress.Label,
+                Street = o.ShippingAddress.Street,
+                City = o.ShippingAddress.City,
+                State = o.ShippingAddress.State,
+                Country = o.ShippingAddress.Country,
+                ZipCode = o.ShippingAddress.ZipCode,
+                IsDefault = o.ShippingAddress.IsDefault
+            },
+            PaymentMethod = o.Payment != null ? o.Payment.Method.ToString() : null,
+            PaymentStatus = o.Payment != null ? o.Payment.Status.ToString() : null,
+            Items = o.Items.Select(i => new OrderItemResponseDto
+            {
+                ProductId = i.ProductId,
+                ProductName = i.Product != null ? i.Product.Name : "Unknown Product",
+                Quantity = i.Quantity,
+                Price = i.Price
+            }).ToList()
+        };
     }
 }
