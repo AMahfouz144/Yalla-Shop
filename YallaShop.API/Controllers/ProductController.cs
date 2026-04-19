@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using YallaShop.API.Helpers;
 using YallaShop.Application.DTOs;
@@ -52,6 +53,7 @@ namespace YallaShop.API.Controllers
 
         // POST: api/Product
         [HttpPost]
+        [Authorize(Roles = "Seller")]
         public async Task<ActionResult<ProductDto>> Create([FromForm] ProductAddDto dto)
         {
             if(await _categoryService.GetByIdAsync(dto.CategoryId) == null)
@@ -71,6 +73,7 @@ namespace YallaShop.API.Controllers
 
         // PUT: api/Product/5
         [HttpPut("{id}")]
+        [Authorize(Roles = "Seller")]
         public async Task<ActionResult<ProductDto>> Update(int id, [FromForm] ProductUpdateDto dto)
         {
             if (await _categoryService.GetByIdAsync(dto.CategoryId) == null)
@@ -96,6 +99,7 @@ namespace YallaShop.API.Controllers
 
         // DELETE: api/Product/5
         [HttpDelete("{id}")]
+        [Authorize(Roles ="Admin,Seller")]
         public async Task<ActionResult> Delete(int id)
         {
             var result = await _productService.DeleteAsync(id);

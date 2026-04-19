@@ -181,6 +181,9 @@ namespace YallaShop.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -326,9 +329,6 @@ namespace YallaShop.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Cart")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -352,8 +352,6 @@ namespace YallaShop.Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Cart");
 
                     b.HasIndex("ShippingAddressId");
 
@@ -788,10 +786,6 @@ namespace YallaShop.Infrastructure.Migrations
 
             modelBuilder.Entity("YallaShop.Domain.Entites.Order", b =>
                 {
-                    b.HasOne("YallaShop.Domain.Entites.ApplicationUser", null)
-                        .WithMany("Orders")
-                        .HasForeignKey("Cart");
-
                     b.HasOne("YallaShop.Domain.Entites.ShippingAddress", "ShippingAddress")
                         .WithMany("Orders")
                         .HasForeignKey("ShippingAddressId")
@@ -799,7 +793,7 @@ namespace YallaShop.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("YallaShop.Domain.Entites.ApplicationUser", "User")
-                        .WithMany()
+                        .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
