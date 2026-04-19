@@ -164,6 +164,9 @@ namespace YallaShop.API
             // Register Services
             builder.Services.AddScoped<IOrderService, OrderService>();
 
+            //Admin Service 
+            builder.Services.AddScoped<IAdminService, AdminService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

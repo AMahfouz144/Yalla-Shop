@@ -12,8 +12,8 @@ using YallaShop.Infrastructure.Persistence;
 namespace YallaShop.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260418224207_updatePictureFileToImageUrl")]
-    partial class updatePictureFileToImageUrl
+    [Migration("20260419115446_initialMigration")]
+    partial class initialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -184,6 +184,9 @@ namespace YallaShop.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -329,9 +332,6 @@ namespace YallaShop.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Cart")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -340,6 +340,9 @@ namespace YallaShop.Infrastructure.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<int>("ShippingAddressId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -353,7 +356,7 @@ namespace YallaShop.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Cart");
+                    b.HasIndex("ShippingAddressId");
 
                     b.HasIndex("UserId");
 
@@ -406,6 +409,9 @@ namespace YallaShop.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,6)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -415,17 +421,23 @@ namespace YallaShop.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsPaid")
-                        .HasColumnType("bit");
+                    b.Property<int>("Method")
+                        .HasColumnType("int");
 
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("PaidAt")
+                    b.Property<DateTime?>("PaidAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("PaymentMethod")
+                    b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<string>("StripeClientSecret")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TransactionId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -608,6 +620,61 @@ namespace YallaShop.Infrastructure.Migrations
                     b.ToTable("Sellers");
                 });
 
+            modelBuilder.Entity("YallaShop.Domain.Entites.ShippingAddress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ZipCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ShippingAddresses");
+                });
+
             modelBuilder.Entity("YallaShop.Domain.Entites.Wishlist", b =>
                 {
                     b.Property<int>("Id")
@@ -722,15 +789,19 @@ namespace YallaShop.Infrastructure.Migrations
 
             modelBuilder.Entity("YallaShop.Domain.Entites.Order", b =>
                 {
-                    b.HasOne("YallaShop.Domain.Entites.ApplicationUser", null)
+                    b.HasOne("YallaShop.Domain.Entites.ShippingAddress", "ShippingAddress")
                         .WithMany("Orders")
-                        .HasForeignKey("Cart");
+                        .HasForeignKey("ShippingAddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("YallaShop.Domain.Entites.ApplicationUser", "User")
-                        .WithMany()
+                        .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ShippingAddress");
 
                     b.Navigation("User");
                 });
@@ -812,6 +883,17 @@ namespace YallaShop.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("YallaShop.Domain.Entites.ShippingAddress", b =>
+                {
+                    b.HasOne("YallaShop.Domain.Entites.ApplicationUser", "User")
+                        .WithMany("ShippingAddresses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("YallaShop.Domain.Entites.Wishlist", b =>
                 {
                     b.HasOne("YallaShop.Domain.Entites.Product", "Product")
@@ -837,6 +919,8 @@ namespace YallaShop.Infrastructure.Migrations
 
                     b.Navigation("Reviews");
 
+                    b.Navigation("ShippingAddresses");
+
                     b.Navigation("Wishlists");
                 });
 
@@ -854,8 +938,7 @@ namespace YallaShop.Infrastructure.Migrations
                 {
                     b.Navigation("Items");
 
-                    b.Navigation("Payment")
-                        .IsRequired();
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("YallaShop.Domain.Entites.Product", b =>
@@ -870,6 +953,11 @@ namespace YallaShop.Infrastructure.Migrations
             modelBuilder.Entity("YallaShop.Domain.Entites.Seller", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("YallaShop.Domain.Entites.ShippingAddress", b =>
+                {
+                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

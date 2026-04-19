@@ -153,7 +153,7 @@ namespace YallaShop.Infrastructure.Services
         private IQueryable<Product> ActiveProductsInActiveCategories()
         {
             return _repository.GetAllAsync()
-                .Where(p => !p.IsDeleted
+                .Where(p => !p.IsDeleted && p.Status == ProductStatus.Accepted
                     && _context.Categories.Any(c => c.Id == p.CategoryId && !c.IsDeleted));
         }
 
