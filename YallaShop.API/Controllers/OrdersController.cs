@@ -29,11 +29,32 @@ namespace YallaShop.API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
+        [HttpGet("customer/{customerId}")]
+        public async Task<IActionResult> GetOrdersByCustomer(string customerId)
+        {
+            var result = await _orderService.GetOrdersByCustomerAsync(customerId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("seller/{sellerId}")]
+        public async Task<IActionResult> GetOrdersBySeller(string sellerId)
+        {
+            var result = await _orderService.GetOrdersBySellerAsync(sellerId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrderById(int id)
         {
             var result = await _orderService.GetOrderByIdAsync(id);
             return result.IsSuccess ? Ok(result) : NotFound(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> CancelOrder(int id)
+        {
+            var result = await _orderService.CancelOrderAsync(id);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
         [HttpGet("{id}/status")]
@@ -47,13 +68,6 @@ namespace YallaShop.API.Controllers
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] OrderStatus status)
         {
             var result = await _orderService.UpdateOrderStatusAsync(id, status);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> CancelOrder(int id)
-        {
-            var result = await _orderService.CancelOrderAsync(id);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }
