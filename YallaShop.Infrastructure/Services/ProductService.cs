@@ -36,6 +36,17 @@ namespace YallaShop.Infrastructure.Services
             return MapToDto(product);
         }
 
+        public async Task<List<ProductDto>> GetProductsOfSeller(int sellerId)
+        {
+            var product = await ActiveProductsInActiveCategories2()
+                .Include(p => p.Category)
+                .Where(p => p.SellerId == sellerId)
+                .ToListAsync();
+
+            if (product == null) return null;
+            return MapToDto2(product);
+        }
+
         public async Task<ProductDto> CreateAsync(string imageUrl, ProductAddDto dto)
         {
             byte[]? picture = null;
@@ -157,6 +168,12 @@ namespace YallaShop.Infrastructure.Services
                     && _context.Categories.Any(c => c.Id == p.CategoryId && !c.IsDeleted));
         }
 
+        private IQueryable<Product> ActiveProductsInActiveCategories2()
+        {
+            return _repository.GetAllAsync()
+                .Where(p => !p.IsDeleted && _context.Categories.Any(c => c.Id == p.CategoryId && !c.IsDeleted));
+        }
+
         // Manual mapping: Product -> ProductDto
         private static ProductDto MapToDto(Product product)
         {
@@ -173,6 +190,29 @@ namespace YallaShop.Infrastructure.Services
                 SellerId = product.SellerId,
                 CreatedAt = product.CreatedAt
             };
+        }
+
+        private static List<ProductDto> MapToDto2(List<Product> products)
+        {
+            List<ProductDto> ret = [];
+            foreach (var item in products)
+            {
+                ProductDto dto = new ProductDto
+                {
+                    Id = item.Id,
+                    Name = item.Name,
+                    Description = item.Description,
+                    Price = item.Price,
+                    StockQuantity = item.StockQuantity,
+                    ImageUrl = item.ImageUrl,
+                    Status = item.Status,
+                    CategoryId = item.CategoryId,
+                    SellerId = item.SellerId,
+                    CreatedAt = item.CreatedAt
+                };
+                ret.Add(dto);
+            }
+            return ret;
         }
 
 

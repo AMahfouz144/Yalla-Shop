@@ -51,6 +51,17 @@ namespace YallaShop.API.Controllers
             return Ok(product);
         }
 
+        [Authorize(Roles = "Seller")]
+        [HttpGet("GetProductsofSellerid/{seller_id}")]
+        public async Task<ActionResult<List<ProductDto>>> GetProducts_of_seller(int seller_id)
+        {
+            var product = await _productService.GetProductsOfSeller(seller_id);
+            if (product == null)
+                return NotFound(new { Message = $"Products with seller Id {seller_id} not found." });
+
+            return Ok(product);
+        }
+
         // POST: api/Product
         [HttpPost]
         [Authorize(Roles = "Seller")]
