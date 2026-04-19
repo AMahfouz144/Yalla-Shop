@@ -1,11 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using YallaShop.Application;
 using YallaShop.Application.DTOs;
+using YallaShop.Application.DTOs.ShippingAddress;
 using YallaShop.Application.IRepositories;
 using YallaShop.Application.IServices;
 using YallaShop.Domain.Entites;
@@ -27,108 +23,6 @@ namespace YallaShop.Infrastructure.Services
             _context = context;
         }
 
-        public async Task<ResponseModel<int>> PlaceOrderAsync(string userId, PlaceOrderDto orderDto)
-        {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                // 1. Fetch Cart with Items and Products
-                var cart = await _context.Carts
-                    .Include(c => c.CartItems)
-                        .ThenInclude(ci => ci.Product)
-                    .FirstOrDefaultAsync(c => c.Id == orderDto.CartId);
-
-                if (cart == null)
-                {
-                    return new ResponseModel<int> { IsSuccess = false, Message = "Cart not found." };
-                }
-
-                if (cart.UserId != userId)
-                {
-                    return new ResponseModel<int> { IsSuccess = false, Message = "Unauthorized: This cart does not belong to you." };
-                }
-
-                if (cart.CartItems == null || !cart.CartItems.Any())
-                {
-                    return new ResponseModel<int> { IsSuccess = false, Message = "Cart is empty." };
-                }
-
-                // 2. Initialize Order
-                var order = new Order
-                {
-                    UserId = userId,
-                    Status = OrderStatus.Pending,
-                    CreatedAt = DateTime.Now,
-                    Street = orderDto.Street,
-                    City = orderDto.City,
-                    State = orderDto.State,
-                    Country = orderDto.Country,
-                    ZipCode = orderDto.ZipCode,
-                    PaymentMethod = orderDto.PaymentMethod,
-                    IsPaid = false,
-                    Items = new List<OrderItem>()
-                };
-
-                decimal totalOrderPrice = 0;
-
-                // 3. Process CartItems
-                foreach (var cartItem in cart.CartItems)
-                {
-                    var product = cartItem.Product;
-                    if (product == null)
-                    {
-                        return new ResponseModel<int> { IsSuccess = false, Message = $"Product details not found for item ID {cartItem.Id}." };
-                    }
-
-                    if (product.StockQuantity < cartItem.Quantity)
-                    {
-                        return new ResponseModel<int> { IsSuccess = false, Message = $"Insufficient stock for product {product.Name} (Available: {product.StockQuantity})." };
-                    }
-
-                    var orderItem = new OrderItem
-                    {
-                        ProductId = product.Id,
-                        Quantity = cartItem.Quantity,
-                        Price = product.Price, // Use server-side price
-                        CreatedAt = DateTime.Now
-                    };
-
-                    totalOrderPrice += (orderItem.Price * orderItem.Quantity);
-                    order.Items.Add(orderItem);
-
-                    // Update stock
-                    product.StockQuantity -= cartItem.Quantity;
-                    _context.Products.Update(product);
-                }
-
-                order.TotalPrice = totalOrderPrice;
-
-                // 4. Save Order
-                await _context.Orders.AddAsync(order);
-
-                // 5. Clear the Cart Items
-                _context.CartItems.RemoveRange(cart.CartItems);
-                
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return new ResponseModel<int>
-                {
-                    IsSuccess = true,
-                    Message = "Order placed successfully and cart cleared.",
-                    Data = order.Id
-                };
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return new ResponseModel<int>
-                {
-                    IsSuccess = false,
-                    Message = "An error occurred while placing the order: " + ex.Message
-                };
-            }
-        }
         public async Task<ResponseModel<IEnumerable<OrderResponseDto>>> GetAllOrdersAsync(string userId)
         {
             try
@@ -137,30 +31,12 @@ namespace YallaShop.Infrastructure.Services
                     .Where(o => o.UserId == userId)
                     .Include(o => o.Items)
                         .ThenInclude(i => i.Product)
+                    .Include(o => o.ShippingAddress)
+                    .Include(o => o.Payment)
                     .OrderByDescending(o => o.CreatedAt)
                     .ToListAsync();
 
-                var orderDtos = orders.Select(o => new OrderResponseDto
-                {
-                    Id = o.Id,
-                    Status = o.Status,
-                    TotalPrice = o.TotalPrice,
-                    CreatedAt = o.CreatedAt,
-                    Street = o.Street,
-                    City = o.City,
-                    State = o.State,
-                    Country = o.Country,
-                    ZipCode = o.ZipCode,
-                    PaymentMethod = o.PaymentMethod,
-                    IsPaid = o.IsPaid,
-                    Items = o.Items.Select(i => new OrderItemResponseDto
-                    {
-                        ProductId = i.ProductId,
-                        ProductName = i.Product?.Name ?? "Unknown Product",
-                        Quantity = i.Quantity,
-                        Price = i.Price
-                    }).ToList()
-                });
+                var orderDtos = orders.Select(o => MapOrderResponse(o));
 
                 return new ResponseModel<IEnumerable<OrderResponseDto>>
                 {
@@ -185,6 +61,8 @@ namespace YallaShop.Infrastructure.Services
                 var order = await _context.Orders
                     .Include(o => o.Items)
                         .ThenInclude(i => i.Product)
+                    .Include(o => o.ShippingAddress)
+                    .Include(o => o.Payment)
                     .FirstOrDefaultAsync(o => o.Id == orderId);
 
                 if (order == null)
@@ -192,32 +70,10 @@ namespace YallaShop.Infrastructure.Services
                     return new ResponseModel<OrderResponseDto> { IsSuccess = false, Message = "Order not found." };
                 }
 
-                var orderDto = new OrderResponseDto
-                {
-                    Id = order.Id,
-                    Status = order.Status,
-                    TotalPrice = order.TotalPrice,
-                    CreatedAt = order.CreatedAt,
-                    Street = order.Street,
-                    City = order.City,
-                    State = order.State,
-                    Country = order.Country,
-                    ZipCode = order.ZipCode,
-                    PaymentMethod = order.PaymentMethod,
-                    IsPaid = order.IsPaid,
-                    Items = order.Items.Select(i => new OrderItemResponseDto
-                    {
-                        ProductId = i.ProductId,
-                        ProductName = i.Product?.Name ?? "Unknown Product",
-                        Quantity = i.Quantity,
-                        Price = i.Price
-                    }).ToList()
-                };
-
                 return new ResponseModel<OrderResponseDto>
                 {
                     IsSuccess = true,
-                    Data = orderDto
+                    Data = MapOrderResponse(order)
                 };
             }
             catch (Exception ex)
@@ -228,6 +84,39 @@ namespace YallaShop.Infrastructure.Services
                     Message = "Error fetching order details: " + ex.Message
                 };
             }
+        }
+
+        private static OrderResponseDto MapOrderResponse(Order o)
+        {
+            return new OrderResponseDto
+            {
+                Id = o.Id,
+                Status = o.Status,
+                TotalPrice = o.TotalPrice,
+                CreatedAt = o.CreatedAt,
+                ShippingAddress = o.ShippingAddress == null
+                    ? null
+                    : new ShippingAddressDto
+                    {
+                        Id = o.ShippingAddress.Id,
+                        Label = o.ShippingAddress.Label,
+                        Street = o.ShippingAddress.Street,
+                        City = o.ShippingAddress.City,
+                        State = o.ShippingAddress.State,
+                        Country = o.ShippingAddress.Country,
+                        ZipCode = o.ShippingAddress.ZipCode,
+                        IsDefault = o.ShippingAddress.IsDefault
+                    },
+                PaymentMethod = o.Payment?.Method.ToString(),
+                PaymentStatus = o.Payment?.Status.ToString(),
+                Items = o.Items.Select(i => new OrderItemResponseDto
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.Product?.Name ?? "Unknown Product",
+                    Quantity = i.Quantity,
+                    Price = i.Price
+                }).ToList()
+            };
         }
 
         public async Task<ResponseModel<OrderStatus>> GetOrderStatusAsync(int orderId)
@@ -299,7 +188,6 @@ namespace YallaShop.Infrastructure.Services
                     return new ResponseModel<bool> { IsSuccess = false, Message = "Only pending orders can be cancelled.", Data = false };
                 }
 
-                // Restore stock
                 foreach (var item in order.Items)
                 {
                     var product = await _productRepository.GetByIdAsync(item.ProductId);

@@ -1,24 +1,25 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Stripe;
-using YallaShop.Application.IRepositories;
 using YallaShop.Application.IServices;
-using YallaShop.Domain.Entites;
 using YallaShop.Domain.Enums;
+using YallaShop.Infrastructure.Persistence;
 
 namespace YallaShop.Infrastructure.Services
-{
+{//hello address shipping
     public class StripeService : IStripeService
     {
-        private readonly IGenericRepository<Order> _orderRepo;
+        private readonly AppDbContext _context;
         private readonly IConfiguration _config;
 
-        public StripeService(IGenericRepository<Order> orderRepo, IConfiguration config)
+        public StripeService(AppDbContext context, IConfiguration config)
         {
-            _orderRepo = orderRepo;
+            _context = context;
             _config = config;
         }
 
-        public async Task<string> CreatePaymentIntentAsync(decimal amount, int orderId)
+        public async Task<(string ClientSecret, string? PaymentIntentId)> CreatePaymentIntentAsync(
+            decimal amount, int orderId)
         {
             StripeConfiguration.ApiKey = _config["Stripe:SecretKey"];
 
@@ -34,7 +35,7 @@ namespace YallaShop.Infrastructure.Services
 
             var service = new PaymentIntentService();
             var intent = await service.CreateAsync(options);
-            return intent.ClientSecret;
+            return (intent.ClientSecret, intent.Id);
         }
 
         public async Task HandleWebhookAsync(string json, string signature)
@@ -54,15 +55,25 @@ namespace YallaShop.Infrastructure.Services
                 return;
             }
 
-            var order = await _orderRepo.GetByIdAsync(orderId);
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
             if (order == null)
             {
                 return;
             }
 
             order.Status = OrderStatus.Processing;
-            _orderRepo.Update(order);
-            await _orderRepo.SaveChangesAsync();
+            _context.Orders.Update(order);
+
+            var payment = await _context.Payments.FirstOrDefaultAsync(p => p.OrderId == orderId);
+            if (payment != null)
+            {
+                payment.Status = PaymentStatus.Completed;
+                payment.PaidAt = DateTime.UtcNow;
+                payment.TransactionId = intent.Id;
+                _context.Payments.Update(payment);
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -23,6 +23,7 @@ namespace YallaShop.Infrastructure.Persistence
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<ShippingAddress> ShippingAddresses { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<PromoCode> PromoCodes { get; set; }
         public DbSet<Review> Reviews { get; set; }
