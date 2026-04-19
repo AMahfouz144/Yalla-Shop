@@ -29,7 +29,7 @@ namespace YallaShop.Infrastructure.Services
 
         public async Task<ProductDto?> GetByIdAsync(int id)
         {
-            var product = await ActiveProductsInActiveCategories()
+            var product = await ActiveProductsInActiveCategories2()
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.Id == id);
             if (product == null) return null;
