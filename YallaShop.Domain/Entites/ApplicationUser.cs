@@ -13,6 +13,8 @@ namespace YallaShop.Domain.Entites
     {
         public required string FullName { get; set; }
         public string? Address { get; set; }
+
+        public bool IsDeleted { get; set; } = false;    
         //the orders that the user made
         public ICollection<Order> Orders { get; set; }
         public ICollection<ShippingAddress> ShippingAddresses { get; set; } = new List<ShippingAddress>();
