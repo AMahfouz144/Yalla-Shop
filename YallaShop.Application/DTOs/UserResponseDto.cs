@@ -13,7 +13,8 @@ namespace YallaShop.Application.DTOs
         public required string UserName { get; set; }
         public string FullName { get; set; }
         public required string token { get; set; }
+		public string Role { get; set; }
 
-        public DateTime TokenExpiryTime { get; set; }
+		public DateTime TokenExpiryTime { get; set; }
     }
 }

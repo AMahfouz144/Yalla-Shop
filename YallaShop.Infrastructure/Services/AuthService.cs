@@ -148,13 +148,16 @@ namespace YallaShop.Infrastructure.Services
                     };
                 }
                 var (token, expiration) = await _jwtService.GenerateTokenAsync(user);
-                var responseDto = new UserResponseDto
+                string role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "User";
+				var responseDto = new UserResponseDto
                 {
                     Id = user.Id,
                     UserName = user.UserName,
                     token = token,
                     TokenExpiryTime = expiration,
-                    FullName = user.FullName
+                    FullName = user.FullName,
+                    Role= role,
+                    
                 };
                 return new ResponseModel<UserResponseDto>
                 {
