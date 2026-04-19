@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using YallaShop.Domain.Entites;
-
-namespace YallaShop.Domain.Enums
+﻿namespace YallaShop.Domain.Enums
 {
     public enum PaymentMethod
     {
         None = 0,
         Card = 1,
         PayPal = 2,
-        CashOnDelivery = 3
+        CashOnDelivery = 3,
+        Cash = 4,
+        Stripe = 5,
+        Wallet = 6
     }
 }

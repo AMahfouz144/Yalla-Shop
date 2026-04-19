@@ -13,11 +13,9 @@ namespace YallaShop.Domain.Entites
     {
         public required string FullName { get; set; }
         public string? Address { get; set; }
-        [ForeignKey("Cart")]
-       // public int CartId { get; set; }
-      //  public Cart Cart { get; set; }
         //the orders that the user made
         public ICollection<Order> Orders { get; set; }
+        public ICollection<ShippingAddress> ShippingAddresses { get; set; } = new List<ShippingAddress>();
         //the reviews that the user added to the products
         public ICollection<Review> Reviews { get; set; }
         //the products that the user added to his wishlist

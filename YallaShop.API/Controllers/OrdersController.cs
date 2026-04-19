@@ -19,38 +19,6 @@ namespace YallaShop.API.Controllers
             _orderService = orderService;
         }
 
-        [HttpPost("place")]
-        public async Task<IActionResult> PlaceOrder([FromBody] PlaceOrderDto orderDto)
-        {
-            if (orderDto == null || orderDto.CartId <= 0)
-            {
-                return BadRequest("Invalid order data. CartId is required.");
-            }
-
-            if (string.IsNullOrWhiteSpace(orderDto.Street) || 
-                string.IsNullOrWhiteSpace(orderDto.City) || 
-                string.IsNullOrWhiteSpace(orderDto.Country))
-            {
-                return BadRequest("Shipping address fields (Street, City, Country) are required.");
-            }
-
-            // Extract UserId from Claims
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized("User ID not found in claims.");
-            }
-
-            var result = await _orderService.PlaceOrderAsync(userId, orderDto);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
-
-            return BadRequest(result);
-        }
         [HttpGet]
         public async Task<IActionResult> GetAllOrders()
         {

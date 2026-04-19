@@ -137,6 +137,7 @@ namespace YallaShop.API
             builder.Services.AddScoped<IPromoService, PromoService>();
             builder.Services.AddScoped<ICheckoutService, CheckoutService>();
             builder.Services.AddScoped<IStripeService, StripeService>();
+            builder.Services.AddScoped<IShippingAddressService, ShippingAddressService>();
             //File helper 
             builder.Services.AddScoped<IFileHelper, FilesHelper>();
             //AutoMapper
