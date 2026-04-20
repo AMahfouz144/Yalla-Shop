@@ -231,6 +231,7 @@ namespace YallaShop.Infrastructure.Services
 
                 var dto = products.Select(p => new ProductResponseDto
                 {
+                    Id = p.Id,
                     Name = p.Name,
                     Description = p.Description,
                     Price = p.Price,

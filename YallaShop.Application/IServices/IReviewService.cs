@@ -9,7 +9,7 @@ namespace YallaShop.Application.IServices
 {
     public interface IReviewService
     {
-        Task<ResponseModel<ReviewResponseDto>> AddReviewAsync(ReviewRequestDto request);
+        Task<ResponseModel<ReviewResponseDto>> AddReviewAsync(string userId,ReviewRequestDto request);
         Task<ResponseModel<bool>> UpdateReviewAsync(int id, ReviewRequestDto request);
         Task<ResponseModel<bool>> DeleteReviewAsync(int id);
         Task<ResponseModel<IEnumerable<ReviewResponseDto>>> GetAllProductReviewsAsync(int productId);
