@@ -24,7 +24,7 @@ namespace YallaShop.Infrastructure.Services
             _mapper = mapper;
         }
 
-        public async Task<ResponseModel<ReviewResponseDto>> AddReviewAsync(ReviewRequestDto request)
+        public async Task<ResponseModel<ReviewResponseDto>> AddReviewAsync(string userId , ReviewRequestDto request)
         {
             try
             {
@@ -38,9 +38,19 @@ namespace YallaShop.Infrastructure.Services
                     return response;
                 }
 
+                bool alreadyReviewed = await _reviewRepository.GetAllAsync()
+                    .AnyAsync(r => r.UserId == userId && r.ProductId == request.ProductId && r.IsDeleted == false);
+
+                if (alreadyReviewed)
+                {
+                    response.IsSuccess = false;
+                    response.Message = "You have already reviewed this product.";
+                    response.Data = null;
+                    return response;
+                }
 
                 var review = _mapper.Map<Review>(request);
-
+                review.UserId = userId;
                 await _reviewRepository.AddAsync(review);
 
                 response.IsSuccess = true;
@@ -138,8 +148,17 @@ namespace YallaShop.Infrastructure.Services
             try
             {
                 var response = new ResponseModel<IEnumerable<ReviewResponseDto>>();
-                var reviews = await _reviewRepository.GetAllByProductId(productId).ToListAsync();
-                var dtoList = reviews.Select(r => _mapper.Map<ReviewResponseDto>(r)).ToList();
+                var reviews =  _reviewRepository.GetAllByProductId(productId);
+                var dtoList = reviews.Select(r => new ReviewResponseDto
+                {
+                    Id = r.Id,
+                    UserId = r.UserId,
+                    ProductId = r.ProductId,
+                    Rating = r.Rating,
+                    ReviewerName = r.User.FullName,
+                    Comment = r.Comment,
+                    CreatedAt = r.CreatedAt
+                }).ToList();
                 response.IsSuccess = true;
                 response.Message = "Reviews Loaded Successfully.";
                 response.Data = dtoList;
@@ -165,7 +184,7 @@ namespace YallaShop.Infrastructure.Services
                 if (!ratings.Any())
                 {
                     response.IsSuccess = true;
-                    response.Message = "No reviews.";
+                    response.Message = "No Reviews";
                     response.Data = 0;
                     return response;
                 }

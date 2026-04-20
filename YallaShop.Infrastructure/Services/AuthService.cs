@@ -152,6 +152,7 @@ namespace YallaShop.Infrastructure.Services
 				var responseDto = new UserResponseDto
                 {
                     Id = user.Id,
+                    UserId = user.Id,
                     UserName = user.UserName,
                     token = token,
                     TokenExpiryTime = expiration,

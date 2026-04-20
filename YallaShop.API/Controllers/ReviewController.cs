@@ -1,9 +1,10 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using YallaShop.Application.IServices;
-using AutoMapper;
-using YallaShop.API.ViewModels;
 using System.Linq;
+using System.Security.Claims;
+using YallaShop.API.ViewModels;
+using YallaShop.Application.IServices;
 
 namespace YallaShop.API.Controllers
 {
@@ -14,18 +15,21 @@ namespace YallaShop.API.Controllers
         private readonly IReviewService _reviewService;
         private readonly IMapper _mapper;
 
+
         public ReviewController(IReviewService reviewService, IMapper mapper)
         {
             _reviewService = reviewService;
             _mapper = mapper;
         }
+        private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         [Authorize(Roles = "Customer")]
         [HttpPost]
         public async Task<IActionResult> AddReview([FromBody] ReviewCreateViewModel request)
         {
+            string userId = GetUserId();
             var dto = _mapper.Map<Application.DTOs.ReviewRequestDto>(request);
-            var result = await _reviewService.AddReviewAsync(dto);
+            var result = await _reviewService.AddReviewAsync(userId,dto);
             if (!result.IsSuccess) return BadRequest(result);
             var vm = _mapper.Map<ReviewResponseViewModel>(result.Data);
             return Ok(new { result.IsSuccess, result.Message, Data = vm });
@@ -35,6 +39,7 @@ namespace YallaShop.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateReview(int id, [FromBody] ReviewUpdateViewModel request)
         {
+            
             var dto = _mapper.Map<Application.DTOs.ReviewRequestDto>(request);
             var result = await _reviewService.UpdateReviewAsync(id, dto);
             if (!result.IsSuccess) return BadRequest(result);
